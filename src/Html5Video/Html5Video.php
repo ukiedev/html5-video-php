@@ -26,34 +26,34 @@ class Html5Video {
   private $Cache;
   private $Process;
   private $defaults = array(
-      /**
-       * Binary of ffmpeg
-       */
-      'ffmpeg.bin' => 'ffmpeg',
-      /**
-       * Binary of qt-faststart
-       */
-      'qt-faststart.bin' => 'qt-faststart',
-      /**
-       * List of profile directories
-       */
-      'profile.dirs' => array(),
-      /**
-       * Additional video container formats. Array with 'videoEncoder' and
-       * 'audioEncoder' settings. Eg
-       *
-       * 'videoContainers' => array('flv' => array('videoEncoder' => 'flv', 'audioEncoder' => 'mp3'));
-       */
-      'videoContainers' => array(
+    /**
+     * Binary of ffmpeg
+     */
+    'ffmpeg.bin' => 'ffmpeg',
+    /**
+     * Binary of qt-faststart
+     */
+    'qt-faststart.bin' => 'qt-faststart',
+    /**
+     * List of profile directories
+     */
+    'profile.dirs' => array(),
+    /**
+     * Additional video container formats. Array with 'videoEncoder' and
+     * 'audioEncoder' settings. Eg
+     *
+     * 'videoContainers' => array('flv' => array('videoEncoder' => 'flv', 'audioEncoder' => 'mp3'));
+     */
+    'videoContainers' => array(
         'mp4' => array('videoEncoder' => array('x264', 'h264'), 'audioEncoder' => 'aac'),
         'webm' => array('videoEncoder' => array('vpx', 'vp8'), 'audioEncoder' => 'vorbis'),
         'ogg' => array('videoEncoder' => 'theora', 'audioEncoder' => 'vorbis')
-        ),
-      /**
-       * Converting videos is time consuming. Disable time limit if set
-       * to 0. Otherwise set timelimit in seconds. Default is 0 (disabled)
-       */
-      'timelimit' => 0
+    ),
+    /**
+     * Converting videos is time consuming. Disable time limit if set
+     * to 0. Otherwise set timelimit in seconds. Default is 0 (disabled)
+     */
+    'timelimit' => 0
   );
   private $config;
 
@@ -150,6 +150,8 @@ class Html5Video {
     for ($i = 0; $i < $max; $i++) {
       if ($version[$i] < $other[$i]) {
         return false;
+      } elseif ($version[$i] > $other[$i]) {
+        return true;
       }
     }
     return true;
@@ -189,13 +191,13 @@ class Html5Video {
   protected function getDriver() {
     $version = $this->getVersion();
     if ($this->isVersionIsGreaterOrEqual($version, array(0, 11, 0))) {
-      return new Driver\FfmpegDriver();
-    } else if ($this->isVersionIsGreaterOrEqual($version, array(0, 9, 0))) {
-      return new Driver\FfmpegDriver10();
-    } else if ($this->isVersionIsGreaterOrEqual($version, array(0, 8, 0))) {
-      return new Driver\FfmpegDriver08();
-    } else {
       return new Driver\FfmpegDriver06();
+    } else if ($this->isVersionIsGreaterOrEqual($version, array(0, 9, 0))) {
+      return new Driver\FfmpegDriver08();
+    } else if ($this->isVersionIsGreaterOrEqual($version, array(0, 8, 0))) {
+      return new Driver\FfmpegDriver10();
+    } else {
+      return new Driver\FfmpegDriver();
     }
   }
 
@@ -271,6 +273,7 @@ class Html5Video {
 
     $lines = array();
     $result = $this->Process->run($this->config['ffmpeg.bin'], array('-version'), $lines);
+
     if ($result == 0 && $lines && preg_match('/^\w+\s(version\s)?(\d+)\.(\d+)\.(\d+).*/', $lines[0], $m)) {
       $version = array($m[2], $m[3], $m[4]);
     } else if ($result == 0 && $lines && preg_match('/^\w+\s(version\s)?\S*N-(\d+)-.*/', $lines[0], $m)) {
@@ -308,6 +311,7 @@ class Html5Video {
     if (!$this->isVersionIsGreaterOrEqual($this->getVersion(), array(0, 8))) {
       $args = array('-formats');
     }
+
     $lines = array();
     $errCode = $this->Process->run($this->config['ffmpeg.bin'], $args, $lines);
     if (!count($lines) || $errCode != 0) {
@@ -357,7 +361,7 @@ class Html5Video {
       $files = scandir($dir);
       foreach ($files as $file) {
         if (preg_match('/(.*)\.profile$/', $file, $m)) {
-           $profiles[] = $m[1];
+          $profiles[] = $m[1];
         }
       }
     }
@@ -409,3 +413,4 @@ class Html5Video {
   }
 
 }
+
